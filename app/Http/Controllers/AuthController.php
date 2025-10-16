@@ -65,23 +65,55 @@ public function getUser(Request $request)
 
     return response()->json($user);
 }
-public function update(Request $request, $id)
-{
-    $user = User::find($id);
-    if (!$user) return response()->json(['message' => 'User not found'], 404);
+// INSIDE AuthController.php
 
-    if ($request->has('name')) $user->name = $request->name;
-    if ($request->has('email')) $user->email = $request->email;
-    if ($request->has('password')) $user->password = Hash::make($request->password);
+public function update(Request $request)
+{
+    // 1. Identify the user using the 'email' sent from the frontend
+    // This assumes the frontend sends the user's current email for identification
+    $currentEmail = $request->input('email');
+    $user = User::where('email', $currentEmail)->first();
+
+    if (!$user) {
+        // Return a 404 error if the user isn't found
+        return response()->json(['message' => 'User not found or not authenticated'], 404);
+    }
+    
+    $rules = [];
+
+    // 2. Handle Name update
+    if ($request->has('name')) {
+        $user->name = $request->name;
+    }
+    
+    // 3. Handle Email update (The frontend sends this as 'new_email')
+    if ($request->has('new_email')) {
+        $rules['new_email'] = 'required|string|email|max:255|unique:users,email';
+        $user->email = $request->new_email;
+    }
+
+    // 4. Handle Password update
+    if ($request->has('password')) {
+        $rules['password'] = 'required|string|min:8';
+        $user->password = Hash::make($request->password);
+    }
+
+    // 5. Run validation before saving
+    if (!empty($rules)) {
+        $validator = \Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation Failed', 'errors' => $validator->errors()], 422);
+        }
+    }
 
     $user->save();
 
+    // 6. Return the updated user data
     return response()->json([
         'message' => 'User updated successfully',
-        'user' => $user
+        'user' => $user // Return the updated user object
     ]);
 }
-
 
 
 }

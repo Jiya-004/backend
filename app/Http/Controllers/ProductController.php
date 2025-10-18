@@ -35,6 +35,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+             'quantity' => 'required|integer|min:0',
         ]);
 
         // ✅ Handle image upload
@@ -48,6 +49,7 @@ class ProductController extends Controller
             'name' => $request->name,
             'price' => $request->price,
             'image' => $imagePath,
+             'quantity' => $request->quantity,  // ✅ Add this
         ]);
 
         return response()->json([
@@ -81,11 +83,13 @@ class ProductController extends Controller
          $request->validate([
         'name' => 'required|string|max:255',
         'price' => 'required|numeric',
+        'quantity' => 'sometimes|integer|min:0',  // ✅ Add this
     ]);
 
     $product->update([
         'name' => $request->name,
         'price' => $request->price,
+        'quantity' => $request->quantity, // ✅ Add this
     ]);
 
     return response()->json([

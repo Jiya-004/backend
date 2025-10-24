@@ -4,29 +4,46 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Route;
 
+// --- Authentication & User Management ---
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user', [AuthController::class, 'getUser']);
 Route::put('/user', [AuthController::class, 'update']); 
-Route::post('/contact', [ContactMessageController::class, 'store']);
-Route::get('/contact', [ContactMessageController::class, 'index']); 
-Route::post('/products', [ProductController::class, 'store']);
-Route::get('/products', [ProductController::class, 'index']);
-Route::put('/products/{product}', [ProductController::class, 'update']);
-Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
-// Cart routes
+// --- Contact Form ---
+Route::post('/contact', [ContactMessageController::class, 'store']);
+
+// --- Product Listing (Public) ---
+Route::get('/products', [ProductController::class, 'index']);
+
+// --- Cart Routes (Typically require authentication) ---
 Route::post('/cart/add', [CartController::class, 'addToCart']);
 Route::get('/cart', [CartController::class, 'index']);
-Route::get('/cart/count', [CartController::class, 'getCount']); // Add this
+Route::get('/cart/count', [CartController::class, 'getCount']);
 Route::put('/cart/{id}', [CartController::class, 'updateQuantity']);
 Route::delete('/cart/{id}', [CartController::class, 'remove']);
 Route::delete('/cart', [CartController::class, 'clear']);
 
-// Order routes
+// --- User-Facing Order Routes ---
 Route::post('/orders', [OrderController::class, 'createOrder']);
 Route::get('/orders/user/{userId}', [OrderController::class, 'getUserOrders']);
-Route::get('/orders/{orderId}', [OrderController::class, 'getOrderDetails']);
-Route::put('/orders/{orderId}/status', [OrderController::class, 'updateOrderStatus']);
-Route::delete('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']);
+Route::get('/orders/{orderId}', [OrderController::class, 'getOrderDetails']); // Used for both user/admin detail viewing
+
+
+// --- ADMIN MANAGEMENT ENDPOINTS (Typically require 'admin' middleware) ---
+
+// Product Management
+Route::post('/products', [ProductController::class, 'store']);
+Route::put('/products/{product}', [ProductController::class, 'update']);
+Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+
+// Contact Messages (Admin viewing all)
+Route::get('/contact/all', [ContactMessageController::class, 'index']);
+
+// Order Management
+Route::get('/orders/all', [OrderController::class, 'getAllOrders']); // Admin Order History (all)
+Route::get('/orders/status/{status}', [OrderController::class, 'getOrdersByStatus']); // Admin New Orders (filtered)
+Route::put('/orders/{orderId}/status', [OrderController::class, 'updateOrderStatus']); // Change status (e.g., pending -> processing)
+Route::delete('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']); // Cancel specific order

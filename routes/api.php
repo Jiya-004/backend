@@ -5,6 +5,7 @@ use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 // --- Authentication & User Management ---
 Route::post('/register', [AuthController::class, 'register']);
@@ -47,3 +48,14 @@ Route::get('/orders/all', [OrderController::class, 'getAllOrders']); // Admin Or
 Route::get('/orders/status/{status}', [OrderController::class, 'getOrdersByStatus']); // Admin New Orders (filtered)
 Route::put('/orders/{orderId}/status', [OrderController::class, 'updateOrderStatus']); // Change status (e.g., pending -> processing)
 Route::delete('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']); // Cancel specific order
+
+// Admin Dashboard Metrics
+Route::prefix('admin')->group(function () {
+    Route::get('/total-customers', [AdminController::class, 'totalCustomers']);
+    Route::get('/total-sales', [AdminController::class, 'totalSales']);
+    Route::get('/messages', [ContactMessageController::class, 'index']); 
+
+     // Debug endpoints
+    Route::get('/debug/orders', [AdminController::class, 'getAllOrdersDebug']);
+    Route::get('/debug/users', [AdminController::class, 'getAllUsersDebug']);
+});

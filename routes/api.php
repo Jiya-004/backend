@@ -56,6 +56,12 @@ Route::prefix('admin')->group(function () {
     Route::get('/messages', [ContactMessageController::class, 'index']); 
 
      // Debug endpoints
-    Route::get('/debug/orders', [AdminController::class, 'getAllOrdersDebug']);
-    Route::get('/debug/users', [AdminController::class, 'getAllUsersDebug']);
+     
 });
+// --- ADMIN MANAGEMENT ENDPOINTS ---
+
+// ... your existing admin routes ...
+
+// Customer Management (Add these lines)
+Route::get('/admin/customers', [AuthController::class, 'getAllCustomers']);
+Route::delete('/admin/customers/{id}', [AuthController::class, 'deleteCustomer']);

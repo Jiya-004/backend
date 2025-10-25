@@ -108,4 +108,52 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+    // GET ALL CUSTOMERS (Admin only)
+public function getAllCustomers()
+{
+     try {
+            // Only fetch users with role 'user', exclude admins
+            $customers = User::where('role', 'user')
+                             ->orderBy('created_at', 'desc')
+                             ->get();
+            
+            return response()->json([
+                'data' => $customers,
+                'message' => 'Customers fetched successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch customers',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+}
+
+// DELETE CUSTOMER (Admin only)
+public function deleteCustomer($id)
+{
+    try {
+        $user = User::find($id);
+        
+        if (!$user) {
+            return response()->json(['message' => 'Customer not found'], 404);
+        }
+        
+        // Optional: Prevent deleting admin users
+        if ($user->role === 'admin') {
+            return response()->json(['message' => 'Cannot delete admin users'], 403);
+        }
+        
+        $user->delete();
+        
+        return response()->json([
+            'message' => 'Customer deleted successfully'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to delete customer',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 }
